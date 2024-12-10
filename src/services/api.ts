@@ -1,6 +1,6 @@
-import { Unit, LaborRate, MileageRate, ProjectArea } from '../types';
+import { Unit, LaborRate, MileageRate, ProjectArea, Department } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export async function fetchUnits(): Promise<Unit[]> {
   const response = await fetch(`${API_BASE}/units`);
@@ -8,24 +8,42 @@ export async function fetchUnits(): Promise<Unit[]> {
   return response.json();
 }
 
-export async function saveUnit(unit: any): Promise<Unit> {
-  const response = await fetch(`${API_BASE}/units`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(unit),
-  });
-  if (!response.ok) throw new Error('Failed to save unit');
-  return response.json();
+export async function saveUnit(unit: Omit<Unit, 'id'>): Promise<Unit> {
+  try {
+    const response = await fetch(`${API_BASE}/units`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(unit),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to save unit');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error saving unit:', error);
+    throw error;
+  }
 }
 
-export async function updateUnit(unit: any): Promise<Unit> {
-  const response = await fetch(`${API_BASE}/units/${unit.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(unit),
-  });
-  if (!response.ok) throw new Error('Failed to update unit');
-  return response.json();
+export async function updateUnit(unit: Unit): Promise<Unit> {
+  try {
+    const response = await fetch(`${API_BASE}/units/${unit.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(unit),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update unit');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error updating unit:', error);
+    throw error;
+  }
 }
 
 export async function fetchLaborRates(): Promise<LaborRate[]> {
@@ -105,7 +123,7 @@ export interface Project {
 
 export async function fetchProjects(): Promise<ProjectArea[]> {
   try {
-    const response = await fetch('/api/projects');
+    const response = await fetch(`${API_BASE}/projects`);
     if (!response.ok) {
       throw new Error('Failed to fetch projects');
     }
@@ -118,7 +136,7 @@ export async function fetchProjects(): Promise<ProjectArea[]> {
 
 export async function saveProject(project: ProjectArea): Promise<ProjectArea> {
   try {
-    const response = await fetch('/api/projects', {
+    const response = await fetch(`${API_BASE}/projects`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -137,7 +155,7 @@ export async function saveProject(project: ProjectArea): Promise<ProjectArea> {
 
 export async function updateProject(project: ProjectArea): Promise<ProjectArea> {
   try {
-    const response = await fetch(`/api/projects/${project.id}`, {
+    const response = await fetch(`${API_BASE}/projects/${project.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -153,3 +171,58 @@ export async function updateProject(project: ProjectArea): Promise<ProjectArea> 
     throw error;
   }
 };
+
+// Mock data for departments
+let mockDepartments: Department[] = JSON.parse(localStorage.getItem('departments') || '[]');
+
+export async function fetchDepartments(): Promise<Department[]> {
+  try {
+    // For development, use mock data
+    return Promise.resolve(mockDepartments);
+  } catch (error) {
+    console.error('Error fetching departments:', error);
+    throw error;
+  }
+}
+
+export async function saveDepartment(department: Omit<Department, 'id'>): Promise<Department> {
+  try {
+    // Generate a random ID for the new department
+    const newDepartment: Department = {
+      ...department,
+      id: Math.random().toString(36).substr(2, 9)
+    };
+    mockDepartments.push(newDepartment);
+    localStorage.setItem('departments', JSON.stringify(mockDepartments));
+    return Promise.resolve(newDepartment);
+  } catch (error) {
+    console.error('Error saving department:', error);
+    throw error;
+  }
+}
+
+export async function updateDepartment(department: Department): Promise<Department> {
+  try {
+    const index = mockDepartments.findIndex(d => d.id === department.id);
+    if (index !== -1) {
+      mockDepartments[index] = department;
+      localStorage.setItem('departments', JSON.stringify(mockDepartments));
+      return Promise.resolve(department);
+    }
+    throw new Error('Department not found');
+  } catch (error) {
+    console.error('Error updating department:', error);
+    throw error;
+  }
+}
+
+export async function deleteDepartment(id: string): Promise<void> {
+  try {
+    mockDepartments = mockDepartments.filter(d => d.id !== id);
+    localStorage.setItem('departments', JSON.stringify(mockDepartments));
+    return Promise.resolve();
+  } catch (error) {
+    console.error('Error deleting department:', error);
+    throw error;
+  }
+}

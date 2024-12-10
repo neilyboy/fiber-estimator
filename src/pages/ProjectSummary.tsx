@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { calculateProjectCosts, calculateROI } from '../utils/calculations';
@@ -25,17 +25,24 @@ function ProjectSummary() {
     projects, 
     units, 
     laborRates, 
-    mileageRates
+    mileageRates,
+    departments,
+    fetchDepartments 
   } = useStore();
   
   const project = projects.find(p => p.id === id);
+
+  useEffect(() => {
+    // Fetch departments when component mounts
+    fetchDepartments();
+  }, [fetchDepartments]);
 
   if (!project) {
     return <div>Project not found</div>;
   }
 
   const {
-    unitCosts,
+    unitsByDepartment,
     laborCosts,
     mileageCosts,
     totalUnitsCost,
@@ -57,8 +64,8 @@ function ProjectSummary() {
 
   const costBreakdown = [
     { name: 'Materials & Equipment', value: totalUnitsCost },
-    { name: 'Labor', value: totalLaborCost },
-    { name: 'Mileage', value: totalMileageCost }
+    ...(totalLaborCost > 0 ? [{ name: 'Labor', value: totalLaborCost }] : []),
+    ...(totalMileageCost > 0 ? [{ name: 'Mileage', value: totalMileageCost }] : [])
   ];
 
   const takeRateData = [
@@ -267,81 +274,95 @@ function ProjectSummary() {
 
       <div className="grid grid-cols-1 gap-6">
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-bold mb-4 text-gray-100">Cost Breakdown</h2>
-          <div className="space-y-6">
-            {/* Materials & Equipment */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Materials & Equipment</h3>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-gray-400">Item</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Quantity</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Unit Cost</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {unitCosts.map((cost, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-2 text-gray-400">{cost.name}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">{cost.quantity} {cost.type}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">${cost.unitCost.toFixed(2)}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">${cost.total.toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <h2 className="text-xl font-bold mb-6 text-gray-100">Cost Breakdown</h2>
+          {/* Materials & Equipment by Department */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {Object.entries(unitsByDepartment).map(([deptId, deptUnits]) => {
+              const department = departments.find(d => d.id === deptId);
+              const departmentTotal = deptUnits.reduce((sum, unit) => sum + unit.total, 0);
+              
+              return (
+                <div key={deptId} className="bg-gray-700/50 p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-semibold text-gray-200">
+                      {department?.name || 'Unknown Department'}
+                    </h3>
+                    <span className="text-lg font-semibold text-emerald-400">
+                      ${departmentTotal.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="space-y-2 bg-gray-800/50 p-3 rounded-lg">
+                    {deptUnits.map((unit, index) => (
+                      <div key={index} className="flex justify-between text-gray-300 items-center">
+                        <div className="flex flex-col">
+                          <span className="font-medium">{unit.name}</span>
+                          <span className="text-sm text-gray-400">
+                            {unit.quantity} {unit.type} × ${unit.unitCost}
+                          </span>
+                        </div>
+                        <span className="font-medium">${unit.total.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-            {/* Labor */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Labor</h3>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-gray-400">Type</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Quantity</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Rate</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {laborCosts.map((cost, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-2 text-gray-400">{cost.name}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">{cost.quantity} {cost.type}s</td>
-                      <td className="px-4 py-2 text-right text-gray-400">${cost.unitCost.toFixed(2)}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">${cost.total.toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Labor Costs */}
+          {laborCosts.length > 0 && (
+            <div className="bg-gray-700/50 p-4 rounded-lg mb-4">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-semibold text-gray-200">Labor</h3>
+                <span className="text-lg font-semibold text-emerald-400">
+                  ${totalLaborCost.toLocaleString()}
+                </span>
+              </div>
+              <div className="space-y-2 bg-gray-800/50 p-3 rounded-lg">
+                {laborCosts.map((labor, index) => (
+                  <div key={index} className="flex justify-between text-gray-300 items-center">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{labor.name}</span>
+                      <span className="text-sm text-gray-400">
+                        {labor.quantity} {labor.type} × ${labor.unitCost}
+                      </span>
+                    </div>
+                    <span className="font-medium">${labor.total.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Mileage */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Mileage</h3>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-gray-400">Distance</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Total Miles</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Rate</th>
-                    <th className="px-4 py-2 text-right text-gray-400">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {mileageCosts.map((cost, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-2 text-gray-400">{cost.name}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">{cost.quantity}</td>
-                      <td className="px-4 py-2 text-right text-gray-400">${cost.unitCost.toFixed(2)}/mile</td>
-                      <td className="px-4 py-2 text-right text-gray-400">${cost.total.toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Mileage Costs */}
+          {mileageCosts.length > 0 && (
+            <div className="bg-gray-700/50 p-4 rounded-lg mb-4">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-semibold text-gray-200">Mileage</h3>
+                <span className="text-lg font-semibold text-emerald-400">
+                  ${totalMileageCost.toLocaleString()}
+                </span>
+              </div>
+              <div className="space-y-2 bg-gray-800/50 p-3 rounded-lg">
+                {mileageCosts.map((mileage, index) => (
+                  <div key={index} className="flex justify-between text-gray-300 items-center">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{mileage.name}</span>
+                      <span className="text-sm text-gray-400">
+                        {mileage.quantity} miles × ${mileage.unitCost}/mile
+                      </span>
+                    </div>
+                    <span className="font-medium">${mileage.total.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 pt-4 border-t border-gray-600">
+            <div className="flex justify-between text-xl font-bold">
+              <span className="text-gray-200">Total Project Cost</span>
+              <span className="text-emerald-400">${totalCost.toLocaleString()}</span>
             </div>
           </div>
         </div>

@@ -1,11 +1,21 @@
 export type UnitType = 'each' | 'foot' | 'hour';
 export type LaborRateType = 'hour' | 'day';
 
-export interface Unit {
+export interface Department {
   id: string;
   name: string;
-  type: UnitType;
+  description?: string;
+  units: Unit[];
+}
+
+export interface Unit {
+  id: string;
+  departmentId: string;
+  name: string;
+  description?: string;
+  type: string;
   cost: number;
+  quantity: number;
 }
 
 export interface LaborRate {

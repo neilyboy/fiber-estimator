@@ -12,6 +12,7 @@ function ProjectEstimator() {
   const projects = useStore((state) => state.projects);
   const addProject = useStore((state) => state.addProject);
   const updateProject = useStore((state) => state.updateProject);
+  const deleteProject = useStore((state) => state.deleteProject);
 
   const [initialValues, setInitialValues] = useState({
     id: '',
@@ -26,6 +27,8 @@ function ProjectEstimator() {
     laborRates: [],
     mileageRates: []
   });
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -155,13 +158,56 @@ function ProjectEstimator() {
     }
   };
 
+  const handleDelete = async () => {
+    if (id) {
+      await deleteProject(id);
+      navigate('/');
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-100">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-100">
           {id ? 'Edit Project' : 'New Project'}
         </h1>
+        {id && (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="px-4 py-2 text-red-400 hover:text-red-300 bg-red-900/30 hover:bg-red-900/50 rounded-lg flex items-center gap-2 transition-colors"
+          >
+            <Trash size={20} />
+            <span>Delete Project</span>
+          </button>
+        )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold text-gray-100 mb-4">Delete Project?</h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this project? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-gray-300 hover:text-gray-200 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 text-red-400 hover:text-red-300 bg-red-900/30 hover:bg-red-900/50 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <Trash size={20} />
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-gray-800 rounded-lg shadow-lg p-6">

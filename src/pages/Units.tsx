@@ -1,165 +1,287 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Plus, Edit2 } from 'lucide-react';
+import { Department, Unit } from '../types';
+import { PlusCircle, Trash2, Edit2, Save, X } from 'lucide-react';
 
-function Units() {
+export default function Units() {
   const { 
-    units, 
+    departments, 
+    fetchDepartments, 
+    addDepartment, 
+    updateDepartment, 
+    deleteDepartment, 
     addUnit, 
-    updateUnit 
+    updateUnit, 
+    deleteUnit 
   } = useStore();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingUnit, setEditingUnit] = useState<any>(null);
+  const [editingDepartment, setEditingDepartment] = useState<string | null>(null);
+  const [editingUnit, setEditingUnit] = useState<string | null>(null);
+  const [newDepartment, setNewDepartment] = useState({ name: '', description: '' });
+  const [newUnit, setNewUnit] = useState<{ [key: string]: { name: string; type: string; cost: number; description: string } }>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const unit = {
-      id: editingUnit?.id || crypto.randomUUID(),
-      name: formData.get('name') as string,
-      type: formData.get('type') as 'each' | 'foot' | 'hour',
-      cost: Number(formData.get('cost')),
-    };
+  useEffect(() => {
+    fetchDepartments();
+  }, [fetchDepartments]);
 
-    if (editingUnit) {
-      updateUnit(unit);
-    } else {
-      addUnit(unit);
+  const handleAddDepartment = async () => {
+    if (newDepartment.name.trim()) {
+      await addDepartment(newDepartment);
+      setNewDepartment({ name: '', description: '' });
     }
-    setIsEditing(false);
+  };
+
+  const handleAddUnit = async (departmentId: string) => {
+    const unit = newUnit[departmentId];
+    if (unit && unit.name.trim()) {
+      await addUnit({
+        ...unit,
+        departmentId,
+        quantity: 0,
+      });
+      setNewUnit({ ...newUnit, [departmentId]: { name: '', type: 'each', cost: 0, description: '' } });
+    }
+  };
+
+  const handleUpdateDepartment = async (department: Department) => {
+    await updateDepartment(department);
+    setEditingDepartment(null);
+  };
+
+  const handleUpdateUnit = async (unit: Unit) => {
+    await updateUnit(unit);
     setEditingUnit(null);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-100">Units</h1>
-        {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 text-gray-100 bg-emerald-600 rounded-lg hover:bg-emerald-700"
-          >
-            <Plus size={20} />
-            <span>Add Unit</span>
-          </button>
-        )}
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-100">Departments & Units</h1>
+        <button
+          onClick={handleAddDepartment}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+        >
+          <PlusCircle size={20} />
+          Add Department
+        </button>
       </div>
 
-      {isEditing && (
-        <form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-lg shadow-md space-y-4">
-          <h2 className="text-xl font-semibold text-gray-100">
-            {editingUnit ? 'Edit Unit' : 'Add New Unit'}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-400">
-                Unit Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                required
-                defaultValue={editingUnit?.name}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-100 bg-gray-700"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400">
-                Unit Type
-              </label>
-              <select
-                name="type"
-                required
-                defaultValue={editingUnit?.type}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-100 bg-gray-700"
-              >
-                <option value="each">Per Each</option>
-                <option value="foot">Per Foot</option>
-                <option value="hour">Per Hour</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400">
-                Cost
-              </label>
-              <input
-                type="number"
-                name="cost"
-                required
-                min="0"
-                step="0.01"
-                defaultValue={editingUnit?.cost}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-gray-100 bg-gray-700"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditing(false);
-                setEditingUnit(null);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-400 hover:bg-gray-700"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-emerald-600 text-gray-100 rounded-md hover:bg-emerald-700"
-            >
-              {editingUnit ? 'Update' : 'Add'} Unit
-            </button>
-          </div>
-        </form>
-      )}
+      {/* New Department Input */}
+      <div className="bg-gray-800 p-4 rounded-lg mb-6">
+        <div className="flex gap-4">
+          <input
+            type="text"
+            placeholder="Department Name"
+            value={newDepartment.name}
+            onChange={(e) => setNewDepartment({ ...newDepartment, name: e.target.value })}
+            className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg"
+          />
+          <input
+            type="text"
+            placeholder="Description (optional)"
+            value={newDepartment.description}
+            onChange={(e) => setNewDepartment({ ...newDepartment, description: e.target.value })}
+            className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg"
+          />
+        </div>
+      </div>
 
-      <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-800">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase tracking-wider">
-                Unit Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase tracking-wider">
-                Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-100 uppercase tracking-wider">
-                Cost
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-100 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-gray-800 divide-y divide-gray-200">
-            {units.map((unit) => (
-              <tr key={unit.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-100">{unit.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap capitalize text-gray-100">
-                  {unit.type}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-100">
-                  ${unit.cost.toFixed(2)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right">
+      {/* Departments List */}
+      <div className="space-y-6">
+        {departments.map((department) => (
+          <div key={department.id} className="bg-gray-800 rounded-lg p-6">
+            {editingDepartment === department.id ? (
+              <div className="flex gap-4 mb-4">
+                <input
+                  type="text"
+                  value={department.name}
+                  onChange={(e) => updateDepartment({ ...department, name: e.target.value })}
+                  className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg"
+                />
+                <input
+                  type="text"
+                  value={department.description || ''}
+                  onChange={(e) => updateDepartment({ ...department, description: e.target.value })}
+                  className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg"
+                />
+                <button
+                  onClick={() => handleUpdateDepartment(department)}
+                  className="p-2 text-green-500 hover:text-green-400"
+                >
+                  <Save size={20} />
+                </button>
+                <button
+                  onClick={() => setEditingDepartment(null)}
+                  className="p-2 text-red-500 hover:text-red-400"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-100">{department.name}</h2>
+                  {department.description && (
+                    <p className="text-gray-400 mt-1">{department.description}</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      setEditingUnit(unit);
-                      setIsEditing(true);
-                    }}
-                    className="text-emerald-400 hover:text-emerald-600"
+                    onClick={() => setEditingDepartment(department.id)}
+                    className="p-2 text-blue-500 hover:text-blue-400"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <Edit2 size={20} />
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  <button
+                    onClick={() => deleteDepartment(department.id)}
+                    className="p-2 text-red-500 hover:text-red-400"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Units List */}
+            <div className="space-y-4">
+              {department.units.map((unit) => (
+                <div key={unit.id} className="bg-gray-700 rounded-lg p-4">
+                  {editingUnit === unit.id ? (
+                    <div className="flex gap-4">
+                      <input
+                        type="text"
+                        value={unit.name}
+                        onChange={(e) => updateUnit({ ...unit, name: e.target.value })}
+                        className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg"
+                      />
+                      <input
+                        type="text"
+                        value={unit.description || ''}
+                        onChange={(e) => updateUnit({ ...unit, description: e.target.value })}
+                        className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg"
+                      />
+                      <select
+                        value={unit.type}
+                        onChange={(e) => updateUnit({ ...unit, type: e.target.value })}
+                        className="bg-gray-600 text-white px-4 py-2 rounded-lg"
+                      >
+                        <option value="each">Each</option>
+                        <option value="foot">Foot</option>
+                        <option value="hour">Hour</option>
+                      </select>
+                      <input
+                        type="number"
+                        value={unit.cost}
+                        onChange={(e) => updateUnit({ ...unit, cost: Number(e.target.value) })}
+                        className="w-32 bg-gray-600 text-white px-4 py-2 rounded-lg"
+                      />
+                      <button
+                        onClick={() => handleUpdateUnit(unit)}
+                        className="p-2 text-green-500 hover:text-green-400"
+                      >
+                        <Save size={20} />
+                      </button>
+                      <button
+                        onClick={() => setEditingUnit(null)}
+                        className="p-2 text-red-500 hover:text-red-400"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold text-gray-100">{unit.name}</h3>
+                        {unit.description && (
+                          <p className="text-gray-400 text-sm mt-1">{unit.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <span className="text-gray-300">{unit.type}</span>
+                        <span className="text-gray-300">${unit.cost}</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setEditingUnit(unit.id)}
+                            className="p-2 text-blue-500 hover:text-blue-400"
+                          >
+                            <Edit2 size={20} />
+                          </button>
+                          <button
+                            onClick={() => deleteUnit(unit.id)}
+                            className="p-2 text-red-500 hover:text-red-400"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* New Unit Input */}
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  placeholder="Unit Name"
+                  value={newUnit[department.id]?.name || ''}
+                  onChange={(e) =>
+                    setNewUnit({
+                      ...newUnit,
+                      [department.id]: { ...newUnit[department.id], name: e.target.value },
+                    })
+                  }
+                  className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg"
+                />
+                <input
+                  type="text"
+                  placeholder="Description (optional)"
+                  value={newUnit[department.id]?.description || ''}
+                  onChange={(e) =>
+                    setNewUnit({
+                      ...newUnit,
+                      [department.id]: { ...newUnit[department.id], description: e.target.value },
+                    })
+                  }
+                  className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg"
+                />
+                <select
+                  value={newUnit[department.id]?.type || 'each'}
+                  onChange={(e) =>
+                    setNewUnit({
+                      ...newUnit,
+                      [department.id]: { ...newUnit[department.id], type: e.target.value },
+                    })
+                  }
+                  className="bg-gray-600 text-white px-4 py-2 rounded-lg"
+                >
+                  <option value="each">Each</option>
+                  <option value="foot">Foot</option>
+                  <option value="hour">Hour</option>
+                </select>
+                <input
+                  type="number"
+                  placeholder="Cost"
+                  value={newUnit[department.id]?.cost || ''}
+                  onChange={(e) =>
+                    setNewUnit({
+                      ...newUnit,
+                      [department.id]: { ...newUnit[department.id], cost: Number(e.target.value) },
+                    })
+                  }
+                  className="w-32 bg-gray-600 text-white px-4 py-2 rounded-lg"
+                />
+                <button
+                  onClick={() => handleAddUnit(department.id)}
+                  className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+                >
+                  <PlusCircle size={20} />
+                  Add Unit
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
-
-export default Units;
