@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Plus, Trash } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { Department } from '../types';
 
 function ProjectEstimator() {
   const { id } = useParams();
   const navigate = useNavigate();
   const units = useStore((state) => state.units);
+  const departments = useStore((state) => state.departments);
+  const fetchDepartments = useStore((state) => state.fetchDepartments);
   const laborRates = useStore((state) => state.laborRates);
   const mileageRates = useStore((state) => state.mileageRates);
   const projects = useStore((state) => state.projects);
@@ -59,6 +62,10 @@ function ProjectEstimator() {
       }
     }
   }, [id, projects]);
+
+  useEffect(() => {
+    fetchDepartments();
+  }, [fetchDepartments]);
 
   const handleAddUnit = () => {
     setInitialValues({
@@ -363,11 +370,25 @@ function ProjectEstimator() {
                     required
                   >
                     <option value="">Select a unit</option>
-                    {units.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} (${u.cost}/{u.type})
-                      </option>
-                    ))}
+                    {departments
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((dept) => {
+                        const deptUnits = units
+                          .filter(u => u.departmentId === dept.id)
+                          .sort((a, b) => a.name.localeCompare(b.name));
+                        
+                        if (deptUnits.length === 0) return null;
+                        
+                        return (
+                          <optgroup key={dept.id} label={dept.name}>
+                            {deptUnits.map((u) => (
+                              <option key={u.id} value={u.id}>
+                                {u.name} (${u.cost}/{u.type})
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      })}
                   </select>
                 </div>
                 <div className="w-32">
