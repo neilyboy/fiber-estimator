@@ -1,4 +1,4 @@
-import { Unit, LaborRate, MileageRate, ProjectArea, Department } from '../types';
+import { Unit, LaborRate, MileageRate, ProjectArea, Department, AnnualProject } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -186,57 +186,97 @@ export async function deleteProject(id: string): Promise<void> {
   }
 }
 
-// Mock data for departments
-let mockDepartments: Department[] = JSON.parse(localStorage.getItem('departments') || '[]');
-
 export async function fetchDepartments(): Promise<Department[]> {
-  try {
-    // For development, use mock data
-    return Promise.resolve(mockDepartments);
-  } catch (error) {
-    console.error('Error fetching departments:', error);
-    throw error;
-  }
+  const response = await fetch(`${API_BASE}/departments`);
+  if (!response.ok) throw new Error('Failed to fetch departments');
+  return response.json();
 }
 
 export async function saveDepartment(department: Omit<Department, 'id'>): Promise<Department> {
-  try {
-    // Generate a random ID for the new department
-    const newDepartment: Department = {
-      ...department,
-      id: Math.random().toString(36).substr(2, 9)
-    };
-    mockDepartments.push(newDepartment);
-    localStorage.setItem('departments', JSON.stringify(mockDepartments));
-    return Promise.resolve(newDepartment);
-  } catch (error) {
-    console.error('Error saving department:', error);
-    throw error;
-  }
+  const response = await fetch(`${API_BASE}/departments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(department),
+  });
+  if (!response.ok) throw new Error('Failed to save department');
+  return response.json();
 }
 
 export async function updateDepartment(department: Department): Promise<Department> {
+  const response = await fetch(`${API_BASE}/departments/${department.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(department),
+  });
+  if (!response.ok) throw new Error('Failed to update department');
+  return response.json();
+}
+
+export async function deleteDepartment(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/departments/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete department');
+}
+
+export async function fetchAnnualProjects(): Promise<AnnualProject[]> {
+  const response = await fetch(`${API_BASE}/annual-projects`);
+  if (!response.ok) throw new Error('Failed to fetch annual projects');
+  return response.json();
+}
+
+export async function saveAnnualProject(project: Omit<AnnualProject, 'id' | 'createdAt' | 'updatedAt'>): Promise<AnnualProject> {
   try {
-    const index = mockDepartments.findIndex(d => d.id === department.id);
-    if (index !== -1) {
-      mockDepartments[index] = department;
-      localStorage.setItem('departments', JSON.stringify(mockDepartments));
-      return Promise.resolve(department);
+    const response = await fetch(`${API_BASE}/annual-projects`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(project),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to save annual project');
     }
-    throw new Error('Department not found');
+    return response.json();
   } catch (error) {
-    console.error('Error updating department:', error);
+    console.error('Error saving annual project:', error);
     throw error;
   }
 }
 
-export async function deleteDepartment(id: string): Promise<void> {
+export async function updateAnnualProject(project: Omit<AnnualProject, 'createdAt' | 'updatedAt'>): Promise<AnnualProject> {
   try {
-    mockDepartments = mockDepartments.filter(d => d.id !== id);
-    localStorage.setItem('departments', JSON.stringify(mockDepartments));
-    return Promise.resolve();
+    const response = await fetch(`${API_BASE}/annual-projects/${project.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(project),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update annual project');
+    }
+    return response.json();
   } catch (error) {
-    console.error('Error deleting department:', error);
+    console.error('Error updating annual project:', error);
+    throw error;
+  }
+}
+
+export async function deleteAnnualProject(id: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/annual-projects/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete annual project');
+    }
+  } catch (error) {
+    console.error('Error deleting annual project:', error);
     throw error;
   }
 }

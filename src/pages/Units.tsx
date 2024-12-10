@@ -6,7 +6,9 @@ import { PlusCircle, Trash2, Edit2, Save, X } from 'lucide-react';
 export default function Units() {
   const { 
     departments, 
-    fetchDepartments, 
+    fetchDepartments,
+    units,
+    fetchUnits,
     addDepartment, 
     updateDepartment, 
     deleteDepartment, 
@@ -21,7 +23,8 @@ export default function Units() {
 
   useEffect(() => {
     fetchDepartments();
-  }, [fetchDepartments]);
+    fetchUnits();
+  }, [fetchDepartments, fetchUnits]);
 
   const handleAddDepartment = async () => {
     if (newDepartment.name.trim()) {
