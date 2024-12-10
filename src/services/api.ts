@@ -172,6 +172,20 @@ export async function updateProject(project: ProjectArea): Promise<ProjectArea> 
   }
 };
 
+export async function deleteProject(id: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/projects/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete project');
+    }
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    throw error;
+  }
+}
+
 // Mock data for departments
 let mockDepartments: Department[] = JSON.parse(localStorage.getItem('departments') || '[]');
 

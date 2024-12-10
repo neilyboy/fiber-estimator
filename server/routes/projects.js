@@ -40,4 +40,20 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    const projects = await readJsonFile('projects.json');
+    const index = projects.findIndex(p => p.id === req.params.id);
+    if (index === -1) {
+      res.status(404).json({ error: 'Project not found' });
+      return;
+    }
+    projects.splice(index, 1);
+    await writeJsonFile('projects.json', projects);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete project' });
+  }
+});
+
 export default router;
