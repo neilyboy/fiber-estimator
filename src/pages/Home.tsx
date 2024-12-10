@@ -164,7 +164,7 @@ function Home() {
                 className="relative group"
               >
                 <Link
-                  to={`/annual/${project.id}`}
+                  to={`/annual-estimator/${project.id}`}
                   className="block p-6 bg-gray-800 rounded-lg shadow-lg hover:bg-gray-700 transition-colors"
                 >
                   <div className="flex items-start justify-between">
@@ -178,7 +178,7 @@ function Home() {
                   </div>
                 </Link>
                 <Link
-                  to={`/annual/${project.id}/edit`}
+                  to={`/annual-estimator/${project.id}/edit`}
                   className="absolute top-4 right-4 p-2 text-gray-400 hover:text-emerald-400 rounded-full hover:bg-gray-700"
                 >
                   <Edit size={20} />

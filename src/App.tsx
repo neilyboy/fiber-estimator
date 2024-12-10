@@ -6,6 +6,7 @@ import Units from './pages/Units';
 import LaborMileage from './pages/LaborMileage';
 import ProjectEstimator from './pages/ProjectEstimator';
 import ProjectSummary from './pages/ProjectSummary';
+import AnnualEstimator from './pages/AnnualEstimator';
 
 function App() {
   return (
@@ -18,6 +19,9 @@ function App() {
           <Route path="estimator" element={<ProjectEstimator />} />
           <Route path="projects/:id/edit" element={<ProjectEstimator />} />
           <Route path="summary/:id" element={<ProjectSummary />} />
+          <Route path="annual-estimator" element={<AnnualEstimator />} />
+          <Route path="annual-estimator/:id" element={<AnnualEstimator />} />
+          <Route path="annual-estimator/:id/edit" element={<AnnualEstimator />} />
         </Route>
       </Routes>
     </BrowserRouter>
