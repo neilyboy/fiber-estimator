@@ -28,6 +28,8 @@ export interface ProjectArea {
   notes: string;
   homesPassed: number;
   currentCustomers: number;
+  monthlyIncomePerCustomer: number;
+  projectedGrowthPercentage: number;
   units: ProjectUnit[];
   laborRates: ProjectLaborRate[];
   mileageRates: ProjectMileageRate[];

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Unit, ProjectArea, LaborRate, MileageRate, Settings } from '../types';
+import { Unit, ProjectArea, LaborRate, MileageRate } from '../types';
 import * as api from '../services/api';
 
 interface Store {
@@ -7,20 +7,22 @@ interface Store {
   laborRates: LaborRate[];
   mileageRates: MileageRate[];
   projects: ProjectArea[];
-  monthlyIncomePerCustomer: number;
-  projectedGrowthPercentage: number;
-  initialized: boolean;
+  fetchUnits: () => Promise<void>;
+  fetchLaborRates: () => Promise<void>;
+  fetchMileageRates: () => Promise<void>;
+  fetchProjects: () => Promise<void>;
   addUnit: (unit: Unit) => Promise<void>;
   updateUnit: (unit: Unit) => Promise<void>;
+  deleteUnit: (id: string) => Promise<void>;
   addLaborRate: (rate: LaborRate) => Promise<void>;
   updateLaborRate: (rate: LaborRate) => Promise<void>;
+  deleteLaborRate: (id: string) => Promise<void>;
   addMileageRate: (rate: MileageRate) => Promise<void>;
   updateMileageRate: (rate: MileageRate) => Promise<void>;
+  deleteMileageRate: (id: string) => Promise<void>;
   addProject: (project: ProjectArea) => Promise<void>;
   updateProject: (project: ProjectArea) => Promise<void>;
-  setMonthlyIncomePerCustomer: (amount: number) => Promise<void>;
-  setProjectedGrowthPercentage: (percentage: number) => Promise<void>;
-  initialize: () => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
 }
 
 export const useStore = create<Store>((set, get) => ({
@@ -28,33 +30,44 @@ export const useStore = create<Store>((set, get) => ({
   laborRates: [],
   mileageRates: [],
   projects: [],
-  monthlyIncomePerCustomer: 0,
-  projectedGrowthPercentage: 0,
-  initialized: false,
 
-  initialize: async () => {
-    if (get().initialized) return;
-
+  fetchUnits: async () => {
     try {
-      const [units, laborRates, mileageRates, projects, settings] = await Promise.all([
-        api.fetchUnits(),
-        api.fetchLaborRates(),
-        api.fetchMileageRates(),
-        api.fetchProjects(),
-        api.fetchSettings(),
-      ]);
-
-      set({
-        units,
-        laborRates,
-        mileageRates,
-        projects,
-        monthlyIncomePerCustomer: settings.monthlyIncomePerCustomer,
-        projectedGrowthPercentage: settings.projectedGrowthPercentage || 0,
-        initialized: true,
-      });
+      const units = await api.fetchUnits();
+      set({ units });
     } catch (error) {
-      console.error('Failed to initialize store:', error);
+      console.error('Failed to fetch units:', error);
+      throw error;
+    }
+  },
+
+  fetchLaborRates: async () => {
+    try {
+      const laborRates = await api.fetchLaborRates();
+      set({ laborRates });
+    } catch (error) {
+      console.error('Failed to fetch labor rates:', error);
+      throw error;
+    }
+  },
+
+  fetchMileageRates: async () => {
+    try {
+      const mileageRates = await api.fetchMileageRates();
+      set({ mileageRates });
+    } catch (error) {
+      console.error('Failed to fetch mileage rates:', error);
+      throw error;
+    }
+  },
+
+  fetchProjects: async () => {
+    try {
+      const projects = await api.fetchProjects();
+      set({ projects });
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
+      throw error;
     }
   },
 
@@ -76,6 +89,16 @@ export const useStore = create<Store>((set, get) => ({
       }));
     } catch (error) {
       console.error('Failed to update unit:', error);
+      throw error;
+    }
+  },
+
+  deleteUnit: async (id) => {
+    try {
+      await api.deleteUnit(id);
+      set((state) => ({ units: state.units.filter((u) => u.id !== id) }));
+    } catch (error) {
+      console.error('Failed to delete unit:', error);
       throw error;
     }
   },
@@ -102,6 +125,16 @@ export const useStore = create<Store>((set, get) => ({
     }
   },
 
+  deleteLaborRate: async (id) => {
+    try {
+      await api.deleteLaborRate(id);
+      set((state) => ({ laborRates: state.laborRates.filter((r) => r.id !== id) }));
+    } catch (error) {
+      console.error('Failed to delete labor rate:', error);
+      throw error;
+    }
+  },
+
   addMileageRate: async (rate) => {
     try {
       const savedRate = await api.saveMileageRate(rate);
@@ -120,6 +153,16 @@ export const useStore = create<Store>((set, get) => ({
       }));
     } catch (error) {
       console.error('Failed to update mileage rate:', error);
+      throw error;
+    }
+  },
+
+  deleteMileageRate: async (id) => {
+    try {
+      await api.deleteMileageRate(id);
+      set((state) => ({ mileageRates: state.mileageRates.filter((r) => r.id !== id) }));
+    } catch (error) {
+      console.error('Failed to delete mileage rate:', error);
       throw error;
     }
   },
@@ -146,26 +189,12 @@ export const useStore = create<Store>((set, get) => ({
     }
   },
 
-  setMonthlyIncomePerCustomer: async (amount) => {
+  deleteProject: async (id) => {
     try {
-      const currentSettings = await api.fetchSettings();
-      const newSettings = { ...currentSettings, monthlyIncomePerCustomer: amount };
-      await api.saveSettings(newSettings);
-      set({ monthlyIncomePerCustomer: amount });
+      await api.deleteProject(id);
+      set((state) => ({ projects: state.projects.filter((p) => p.id !== id) }));
     } catch (error) {
-      console.error('Failed to save monthly income:', error);
-      throw error;
-    }
-  },
-
-  setProjectedGrowthPercentage: async (percentage) => {
-    try {
-      const currentSettings = await api.fetchSettings();
-      const newSettings = { ...currentSettings, projectedGrowthPercentage: percentage };
-      await api.saveSettings(newSettings);
-      set({ projectedGrowthPercentage: percentage });
-    } catch (error) {
-      console.error('Failed to save projected growth percentage:', error);
+      console.error('Failed to delete project:', error);
       throw error;
     }
   },

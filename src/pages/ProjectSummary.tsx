@@ -2,7 +2,19 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { calculateProjectCosts, calculateROI } from '../utils/calculations';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Cell,
+  Pie,
+  PieChart
+} from 'recharts';
 import { Printer, Edit, Users, TrendingUp } from 'lucide-react';
 
 const COLORS = ['#4f46e5', '#10b981', '#f59e0b'];
@@ -13,9 +25,7 @@ function ProjectSummary() {
     projects, 
     units, 
     laborRates, 
-    mileageRates, 
-    monthlyIncomePerCustomer,
-    projectedGrowthPercentage 
+    mileageRates
   } = useStore();
   
   const project = projects.find(p => p.id === id);
@@ -43,7 +53,7 @@ function ProjectSummary() {
     currentROI,
     projectedROI,
     fullTakeROI
-  } = calculateROI(project, totalCost, monthlyIncomePerCustomer, projectedGrowthPercentage);
+  } = calculateROI(project, totalCost);
 
   const costBreakdown = [
     { name: 'Materials & Equipment', value: totalUnitsCost },
@@ -58,27 +68,27 @@ function ProjectSummary() {
   ];
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-12 bg-gray-900">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold">{project.name}</h1>
-          <p className="mt-2 text-gray-600">{project.notes}</p>
+          <h1 className="text-3xl font-bold text-gray-100">{project.name}</h1>
+          <p className="mt-2 text-gray-400">{project.notes}</p>
         </div>
-        <div className="flex space-x-4">
-          <Link
-            to={`/estimator/${id}`}
-            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-          >
-            <Edit className="w-4 h-4" />
-            <span>Edit Project</span>
-          </Link>
+        <div className="flex items-center gap-4 print:hidden">
           <button
             onClick={() => window.print()}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+            className="flex items-center gap-2 px-4 py-2 text-gray-300 bg-gray-800 rounded-lg border border-gray-700 hover:bg-gray-700"
           >
-            <Printer className="w-4 h-4" />
-            <span>Print Summary</span>
+            <Printer size={20} />
+            <span>Print</span>
           </button>
+          <Link
+            to={`/projects/${project.id}/edit`}
+            className="flex items-center gap-2 px-4 py-2 text-gray-100 bg-emerald-600 rounded-lg hover:bg-emerald-700"
+          >
+            <Edit size={20} />
+            <span>Edit Project</span>
+          </Link>
         </div>
       </div>
 
@@ -90,143 +100,174 @@ function ProjectSummary() {
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-sm font-medium text-gray-500">Total Cost</h3>
-          <p className="mt-2 text-3xl font-bold">${totalCost.toLocaleString()}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h3 className="text-sm font-medium text-gray-400">Total Cost</h3>
+          <p className="mt-2 text-3xl font-bold text-gray-100">${totalCost.toLocaleString()}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-sm font-medium text-gray-500">Cost per Home</h3>
-          <p className="mt-2 text-3xl font-bold">${costPerHome.toLocaleString()}</p>
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h3 className="text-sm font-medium text-gray-400">Current Take Rate</h3>
+          <p className="mt-2 text-3xl font-bold text-gray-100">{currentTakeRate.toFixed(1)}%</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-sm font-medium text-gray-500">Current Take Rate</h3>
-          <p className="mt-2 text-3xl font-bold">{currentTakeRate.toFixed(1)}%</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-sm font-medium text-gray-500">Projected Take Rate</h3>
-          <p className="mt-2 text-3xl font-bold">{projectedTakeRate.toFixed(1)}%</p>
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h3 className="text-sm font-medium text-gray-400">Projected Take Rate</h3>
+          <p className="mt-2 text-3xl font-bold text-gray-100">{projectedTakeRate.toFixed(1)}%</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">Take Rate Analysis</h2>
+        {/* Cost per Home Analysis */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-4 text-gray-100">Cost per Home Analysis</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-gray-700 rounded-lg">
+              <h3 className="font-semibold">100% Take Rate</h3>
+              <p className="text-2xl font-bold text-indigo-600">
+                ${costPerHome.toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-400">
+                Based on {project.homesPassed} homes
+              </p>
+            </div>
+            <div className="text-center p-4 bg-gray-700 rounded-lg">
+              <h3 className="font-semibold">Current Take Rate</h3>
+              <p className="text-2xl font-bold text-green-600">
+                ${(totalCost / project.currentCustomers).toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-400">
+                At {currentTakeRate.toFixed(1)}% take rate
+              </p>
+            </div>
+            <div className="text-center p-4 bg-gray-700 rounded-lg">
+              <h3 className="font-semibold">Projected Take Rate</h3>
+              <p className="text-2xl font-bold text-amber-600">
+                ${(totalCost / totalProjectedCustomers).toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-400">
+                At {projectedTakeRate.toFixed(1)}% take rate
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ROI Analysis */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-4 text-gray-100">ROI Analysis</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-gray-700 rounded-lg">
+              <h3 className="font-semibold">Current ROI</h3>
+              <p className="text-2xl font-bold text-indigo-600">
+                {currentROI.toFixed(1)} years
+              </p>
+              <p className="text-sm text-gray-400">
+                At {currentTakeRate.toFixed(1)}% take rate
+              </p>
+            </div>
+            <div className="text-center p-4 bg-gray-700 rounded-lg">
+              <h3 className="font-semibold">Projected ROI</h3>
+              <p className="text-2xl font-bold text-green-600">
+                {projectedROI.toFixed(1)} years
+              </p>
+              <p className="text-sm text-gray-400">
+                At {projectedTakeRate.toFixed(1)}% take rate
+              </p>
+            </div>
+            <div className="text-center p-4 bg-gray-700 rounded-lg">
+              <h3 className="font-semibold">Full Take ROI</h3>
+              <p className="text-2xl font-bold text-amber-600">
+                {fullTakeROI.toFixed(1)} years
+              </p>
+              <p className="text-sm text-gray-400">
+                At 100% take rate
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Monthly Revenue and Take Rate Analysis Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Monthly Revenue Analysis */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-4 text-gray-100">Monthly Revenue Analysis</h2>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-gray-700 rounded-lg">
+                <h3 className="font-semibold mb-2">Current Monthly Revenue</h3>
+                <p className="text-2xl font-bold text-green-600">
+                  ${((project.monthlyIncomePerCustomer || 0) * project.currentCustomers).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {project.currentCustomers} customers
+                </p>
+              </div>
+              <div className="text-center p-4 bg-gray-700 rounded-lg">
+                <h3 className="font-semibold mb-2">Projected Monthly Revenue</h3>
+                <p className="text-2xl font-bold text-amber-600">
+                  ${((project.monthlyIncomePerCustomer || 0) * totalProjectedCustomers).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {totalProjectedCustomers} customers
+                </p>
+              </div>
+            </div>
+            <div className="text-center p-4 bg-gray-700 rounded-lg">
+              <h3 className="font-semibold mb-2">Full Take Monthly Revenue</h3>
+              <p className="text-2xl font-bold text-indigo-600">
+                ${((project.monthlyIncomePerCustomer || 0) * project.homesPassed).toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-400">
+                {project.homesPassed} potential customers
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Take Rate Analysis Chart */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-4 text-gray-100">Take Rate Analysis</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">Current Customers</h3>
-                <p className="text-gray-600">{project.currentCustomers} homes</p>
+                <p className="text-gray-400">{project.currentCustomers} homes</p>
               </div>
               <div className="text-right">
                 <h3 className="font-semibold">Take Rate</h3>
-                <p className="text-gray-600">{currentTakeRate.toFixed(1)}%</p>
+                <p className="text-gray-400">{currentTakeRate.toFixed(1)}%</p>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">Projected Growth</h3>
-                <p className="text-gray-600">+{projectedNewCustomers} homes</p>
+                <p className="text-gray-400">+{projectedNewCustomers} homes</p>
               </div>
               <div className="text-right">
                 <h3 className="font-semibold">New Take Rate</h3>
-                <p className="text-gray-600">{projectedTakeRate.toFixed(1)}%</p>
+                <p className="text-gray-400">{projectedTakeRate.toFixed(1)}%</p>
               </div>
             </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={takeRateData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="name" stroke="#9CA3AF" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '0.5rem' }}
+                    itemStyle={{ color: '#9CA3AF' }}
+                  />
                   <Bar dataKey="takeRate" fill="#4f46e5" name="Take Rate %" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">ROI Analysis</h2>
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold">Current ROI</h3>
-                <p className="text-2xl font-bold text-indigo-600">
-                  {currentROI.toFixed(1)} years
-                </p>
-                <p className="text-sm text-gray-500">
-                  Based on {project.currentCustomers} customers
-                </p>
-              </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold">Projected ROI</h3>
-                <p className="text-2xl font-bold text-green-600">
-                  {projectedROI.toFixed(1)} years
-                </p>
-                <p className="text-sm text-gray-500">
-                  Based on {totalProjectedCustomers} customers
-                </p>
-              </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold">Full Take ROI</h3>
-                <p className="text-2xl font-bold text-amber-600">
-                  {fullTakeROI.toFixed(1)} years
-                </p >
-                <p className="text-sm text-gray-500">
-                  Based on {project.homesPassed} customers
-                </p>
-              </div>
-            </div>
-            <div className="mt-6">
-              <h3 className="font-semibold mb-2">Monthly Revenue</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Current</span>
-                  <span>${(monthlyIncomePerCustomer * project.currentCustomers).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Projected</span>
-                  <span>${(monthlyIncomePerCustomer * totalProjectedCustomers).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Full Take</span>
-                  <span>${(monthlyIncomePerCustomer * project.homesPassed).toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">Cost Distribution</h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={costBreakdown}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={120}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {costBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">Cost Breakdown</h2>
+      <div className="grid grid-cols-1 gap-6">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold mb-4 text-gray-100">Cost Breakdown</h2>
           <div className="space-y-6">
             {/* Materials & Equipment */}
             <div>
@@ -234,19 +275,19 @@ function ProjectSummary() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
-                    <th className="px-4 py-2 text-left">Item</th>
-                    <th className="px-4 py-2 text-right">Quantity</th>
-                    <th className="px-4 py-2 text-right">Unit Cost</th>
-                    <th className="px-4 py-2 text-right">Total</th>
+                    <th className="px-4 py-2 text-left text-gray-400">Item</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Quantity</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Unit Cost</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {unitCosts.map((cost, index) => (
                     <tr key={index}>
-                      <td className="px-4 py-2">{cost.name}</td>
-                      <td className="px-4 py-2 text-right">{cost.quantity} {cost.type}</td>
-                      <td className="px-4 py-2 text-right">${cost.unitCost.toFixed(2)}</td>
-                      <td className="px-4 py-2 text-right">${cost.total.toLocaleString()}</td>
+                      <td className="px-4 py-2 text-gray-400">{cost.name}</td>
+                      <td className="px-4 py-2 text-right text-gray-400">{cost.quantity} {cost.type}</td>
+                      <td className="px-4 py-2 text-right text-gray-400">${cost.unitCost.toFixed(2)}</td>
+                      <td className="px-4 py-2 text-right text-gray-400">${cost.total.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -259,19 +300,19 @@ function ProjectSummary() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
-                    <th className="px-4 py-2 text-left">Type</th>
-                    <th className="px-4 py-2 text-right">Quantity</th>
-                    <th className="px-4 py-2 text-right">Rate</th>
-                    <th className="px-4 py-2 text-right">Total</th>
+                    <th className="px-4 py-2 text-left text-gray-400">Type</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Quantity</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Rate</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {laborCosts.map((cost, index) => (
                     <tr key={index}>
-                      <td className="px-4 py-2">{cost.name}</td>
-                      <td className="px-4 py-2 text-right">{cost.quantity} {cost.type}s</td>
-                      <td className="px-4 py-2 text-right">${cost.unitCost.toFixed(2)}</td>
-                      <td className="px-4 py-2 text-right">${cost.total.toLocaleString()}</td>
+                      <td className="px-4 py-2 text-gray-400">{cost.name}</td>
+                      <td className="px-4 py-2 text-right text-gray-400">{cost.quantity} {cost.type}s</td>
+                      <td className="px-4 py-2 text-right text-gray-400">${cost.unitCost.toFixed(2)}</td>
+                      <td className="px-4 py-2 text-right text-gray-400">${cost.total.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -284,19 +325,19 @@ function ProjectSummary() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
-                    <th className="px-4 py-2 text-left">Distance</th>
-                    <th className="px-4 py-2 text-right">Total Miles</th>
-                    <th className="px-4 py-2 text-right">Rate</th>
-                    <th className="px-4 py-2 text-right">Total</th>
+                    <th className="px-4 py-2 text-left text-gray-400">Distance</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Total Miles</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Rate</th>
+                    <th className="px-4 py-2 text-right text-gray-400">Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {mileageCosts.map((cost, index) => (
                     <tr key={index}>
-                      <td className="px-4 py-2">{cost.name}</td>
-                      <td className="px-4 py-2 text-right">{cost.quantity}</td>
-                      <td className="px-4 py-2 text-right">${cost.unitCost.toFixed(2)}/mile</td>
-                      <td className="px-4 py-2 text-right">${cost.total.toLocaleString()}</td>
+                      <td className="px-4 py-2 text-gray-400">{cost.name}</td>
+                      <td className="px-4 py-2 text-right text-gray-400">{cost.quantity}</td>
+                      <td className="px-4 py-2 text-right text-gray-400">${cost.unitCost.toFixed(2)}/mile</td>
+                      <td className="px-4 py-2 text-right text-gray-400">${cost.total.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>

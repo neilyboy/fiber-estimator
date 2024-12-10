@@ -80,16 +80,14 @@ export function calculateProjectCosts(
 export function calculateROI(
   project: ProjectArea,
   totalCost: number,
-  monthlyIncomePerCustomer: number,
-  projectedGrowthPercentage: number
 ): ROICalculation {
   const currentTakeRate = (project.currentCustomers / project.homesPassed) * 100;
   const remainingHomes = project.homesPassed - project.currentCustomers;
-  const projectedNewCustomers = Math.ceil(remainingHomes * (projectedGrowthPercentage / 100));
+  const projectedNewCustomers = Math.ceil(remainingHomes * (project.projectedGrowthPercentage / 100));
   const totalProjectedCustomers = project.currentCustomers + projectedNewCustomers;
   const projectedTakeRate = (totalProjectedCustomers / project.homesPassed) * 100;
 
-  const annualIncomePerCustomer = monthlyIncomePerCustomer * 12;
+  const annualIncomePerCustomer = project.monthlyIncomePerCustomer * 12;
   
   // ROI calculations (in years)
   const currentROI = totalCost / (annualIncomePerCustomer * project.currentCustomers);

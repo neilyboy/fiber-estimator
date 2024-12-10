@@ -48,22 +48,22 @@ function LaborMileage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 bg-gray-900">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Labor & Mileage Management</h1>
+        <h1 className="text-3xl font-bold text-gray-100">Labor & Mileage Management</h1>
       </div>
 
       {/* Labor Rates Section */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-gray-800 rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold flex items-center">
+          <h2 className="text-xl font-semibold flex items-center text-gray-100">
             <Clock className="w-5 h-5 mr-2" />
             Labor Rates
           </h2>
           {!isEditingLabor && (
             <button
               onClick={() => setIsEditingLabor(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center space-x-2"
+              className="flex items-center gap-2 px-4 py-2 text-gray-100 bg-emerald-600 rounded-lg hover:bg-emerald-700"
             >
               <Plus className="w-4 h-4" />
               <span>Add Labor Rate</span>
@@ -75,29 +75,29 @@ function LaborMileage() {
           <form onSubmit={handleLaborSubmit} className="space-y-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Rate Name</label>
+                <label className="block text-sm font-medium text-gray-400">Rate Name</label>
                 <input
                   type="text"
                   name="name"
                   required
                   defaultValue={editingLaborRate?.name}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 bg-gray-700 text-gray-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Rate Type</label>
+                <label className="block text-sm font-medium text-gray-400">Rate Type</label>
                 <select
                   name="type"
                   required
                   defaultValue={editingLaborRate?.type || 'hour'}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 bg-gray-700 text-gray-100"
                 >
                   <option value="hour">Per Hour</option>
                   <option value="day">Per Day</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Cost</label>
+                <label className="block text-sm font-medium text-gray-400">Cost</label>
                 <input
                   type="number"
                   name="cost"
@@ -105,7 +105,7 @@ function LaborMileage() {
                   min="0"
                   step="0.01"
                   defaultValue={editingLaborRate?.cost}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 bg-gray-700 text-gray-100"
                 />
               </div>
             </div>
@@ -116,13 +116,13 @@ function LaborMileage() {
                   setIsEditingLabor(false);
                   setEditingLaborRate(null);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-600 rounded-md text-gray-400 hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
               >
                 {editingLaborRate ? 'Update' : 'Add'} Labor Rate
               </button>
@@ -131,30 +131,30 @@ function LaborMileage() {
         )}
 
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-800">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Rate Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Type
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Cost
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-gray-800 divide-y divide-gray-200">
             {laborRates.map((rate) => (
               <tr key={rate.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{rate.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap capitalize">
+                <td className="px-6 py-4 whitespace-nowrap text-gray-100">{rate.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap capitalize text-gray-100">
                   Per {rate.type}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap text-gray-100">
                   ${rate.cost.toFixed(2)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -163,7 +163,7 @@ function LaborMileage() {
                       setEditingLaborRate(rate);
                       setIsEditingLabor(true);
                     }}
-                    className="text-indigo-600 hover:text-indigo-900"
+                    className="text-emerald-400 hover:text-emerald-600"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
@@ -175,16 +175,16 @@ function LaborMileage() {
       </div>
 
       {/* Mileage Rates Section */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-gray-800 rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold flex items-center">
+          <h2 className="text-xl font-semibold flex items-center text-gray-100">
             <Car className="w-5 h-5 mr-2" />
             Mileage Rates
           </h2>
           {!isEditingMileage && (
             <button
               onClick={() => setIsEditingMileage(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center space-x-2"
+              className="flex items-center gap-2 px-4 py-2 text-gray-100 bg-emerald-600 rounded-lg hover:bg-emerald-700"
             >
               <Plus className="w-4 h-4" />
               <span>Add Mileage Rate</span>
@@ -196,7 +196,7 @@ function LaborMileage() {
           <form onSubmit={handleMileageSubmit} className="space-y-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-400">
                   Distance from Home Office (miles)
                 </label>
                 <input
@@ -206,11 +206,11 @@ function LaborMileage() {
                   min="0"
                   step="0.1"
                   defaultValue={editingMileageRate?.distance}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 bg-gray-700 text-gray-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-400">
                   Cost per Mile
                 </label>
                 <input
@@ -220,7 +220,7 @@ function LaborMileage() {
                   min="0"
                   step="0.01"
                   defaultValue={editingMileageRate?.costPerMile}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="mt-1 block w-full rounded-md border-gray-600 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 bg-gray-700 text-gray-100"
                 />
               </div>
             </div>
@@ -231,13 +231,13 @@ function LaborMileage() {
                   setIsEditingMileage(false);
                   setEditingMileageRate(null);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-600 rounded-md text-gray-400 hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
               >
                 {editingMileageRate ? 'Update' : 'Add'} Mileage Rate
               </button>
@@ -246,26 +246,26 @@ function LaborMileage() {
         )}
 
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-800">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Distance (miles)
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Cost per Mile
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-gray-800 divide-y divide-gray-200">
             {mileageRates.map((rate) => (
               <tr key={rate.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap text-gray-100">
                   {rate.distance.toFixed(1)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap text-gray-100">
                   ${rate.costPerMile.toFixed(2)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -274,7 +274,7 @@ function LaborMileage() {
                       setEditingMileageRate(rate);
                       setIsEditingMileage(true);
                     }}
-                    className="text-indigo-600 hover:text-indigo-900"
+                    className="text-emerald-400 hover:text-emerald-600"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>

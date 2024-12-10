@@ -16,7 +16,7 @@ function App() {
           <Route path="units" element={<Units />} />
           <Route path="labor-mileage" element={<LaborMileage />} />
           <Route path="estimator" element={<ProjectEstimator />} />
-          <Route path="estimator/:id" element={<ProjectEstimator />} />
+          <Route path="projects/:id/edit" element={<ProjectEstimator />} />
           <Route path="summary/:id" element={<ProjectSummary />} />
         </Route>
       </Routes>
