@@ -111,6 +111,8 @@ function AnnualEstimator() {
     let totalHomes = 0;
     let totalCurrentCustomers = 0;
     let totalMonthlyRevenue = 0;
+    let totalProjectedGrowthRate = 0;
+    let projectCount = 0;
     const departmentCosts: Record<string, number> = {};
     const unitTotals: Record<string, { quantity: number; cost: number; unitId: string }> = {};
 
@@ -126,6 +128,12 @@ function AnnualEstimator() {
         totalHomes += project.homesPassed;
         totalCurrentCustomers += project.currentCustomers;
         totalMonthlyRevenue += monthlyRevenue;
+        
+        // Add to projected growth rate calculation
+        if (project.projectedGrowthRate !== undefined && project.projectedGrowthRate > 0) {
+          totalProjectedGrowthRate += project.projectedGrowthRate;
+          projectCount++;
+        }
 
         // Calculate department costs and unit totals
         project.units.forEach(projectUnit => {
@@ -134,10 +142,8 @@ function AnnualEstimator() {
             const deptId = unit.departmentId;
             const unitCost = unit.cost * projectUnit.quantity;
             
-            // Add to department costs
             departmentCosts[deptId] = (departmentCosts[deptId] || 0) + unitCost;
             
-            // Add to unit totals
             const key = `${unit.id}-${unit.name}`;
             if (!unitTotals[key]) {
               unitTotals[key] = { quantity: 0, cost: 0, unitId: unit.id };
@@ -151,8 +157,26 @@ function AnnualEstimator() {
 
     const totalCost = totalMaterials + totalLabor + totalMileage;
     const averageCostPerHome = totalHomes > 0 ? totalCost / totalHomes : 0;
-    const averageTakeRate = totalHomes > 0 ? (totalCurrentCustomers / totalHomes) * 100 : 0;
-    const roi = calculateSimpleROI(totalCost, totalMonthlyRevenue);
+    const currentTakeRate = totalHomes > 0 ? (totalCurrentCustomers / totalHomes) * 100 : 0;
+    
+    // Calculate average projected growth rate - default to 30% if none specified
+    const averageProjectedGrowthRate = projectCount > 0 ? totalProjectedGrowthRate / projectCount : 30;
+    
+    // Calculate projected new customers based on remaining homes and growth rate
+    const remainingHomes = totalHomes - totalCurrentCustomers;
+    const projectedNewCustomers = Math.floor(remainingHomes * (averageProjectedGrowthRate / 100));
+    const totalProjectedCustomers = totalCurrentCustomers + projectedNewCustomers;
+    const projectedTakeRate = totalHomes > 0 ? (totalProjectedCustomers / totalHomes) * 100 : 0;
+    
+    // Calculate monthly revenue for different scenarios
+    const avgMonthlyIncomePerCustomer = totalCurrentCustomers > 0 ? totalMonthlyRevenue / totalCurrentCustomers : 0;
+    const projectedMonthlyRevenue = totalProjectedCustomers * avgMonthlyIncomePerCustomer;
+    const fullTakeMonthlyRevenue = totalHomes * avgMonthlyIncomePerCustomer;
+
+    // Calculate ROI for different scenarios
+    const currentROI = calculateSimpleROI(totalCost, totalMonthlyRevenue);
+    const projectedROI = calculateSimpleROI(totalCost, projectedMonthlyRevenue);
+    const fullTakeROI = calculateSimpleROI(totalCost, fullTakeMonthlyRevenue);
 
     return {
       totalMaterials,
@@ -161,12 +185,19 @@ function AnnualEstimator() {
       totalCost,
       totalHomes,
       totalCurrentCustomers,
-      takeRate: averageTakeRate,
+      projectedNewCustomers,
+      totalProjectedCustomers,
+      currentTakeRate,
+      projectedTakeRate,
       departmentCosts,
       unitTotals,
       averageCostPerHome,
       totalMonthlyRevenue,
-      roi
+      projectedMonthlyRevenue,
+      fullTakeMonthlyRevenue,
+      currentROI,
+      projectedROI,
+      fullTakeROI
     };
   };
 
@@ -308,7 +339,7 @@ function AnnualEstimator() {
               <div className="p-4 bg-gray-700 rounded-lg">
                 <div className="text-sm text-gray-400">Take Rate</div>
                 <div className="text-2xl font-bold text-gray-100">
-                  {totals.takeRate.toFixed(1)}%
+                  {totals.currentTakeRate.toFixed(1)}%
                 </div>
               </div>
             </div>
@@ -342,6 +373,10 @@ function AnnualEstimator() {
                   if (!project) return null;
                   
                   const costs = calculateProjectCosts(project, units, laborRates, mileageRates);
+                  const monthlyRevenue = project.currentCustomers * (project.monthlyIncomePerCustomer || 0);
+                  const roi = calculateSimpleROI(costs.totalCost, monthlyRevenue);
+                  const costPerHome = costs.totalCost / project.homesPassed;
+                  
                   return (
                     <div key={project.id} className="bg-gray-700 rounded-lg p-4">
                       <div className="flex justify-between items-center mb-3">
@@ -378,6 +413,20 @@ function AnnualEstimator() {
                           <span className="text-gray-100 ml-2">
                             {((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}%
                           </span>
+                        </div>
+                      </div>
+                      <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-400">Cost per Home:</span>
+                          <span className="text-gray-100 ml-2">${costPerHome.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Monthly Revenue:</span>
+                          <span className="text-gray-100 ml-2">${monthlyRevenue.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">ROI (Years):</span>
+                          <span className="text-gray-100 ml-2">{roi.toFixed(1)}</span>
                         </div>
                       </div>
                     </div>
@@ -499,10 +548,36 @@ function AnnualEstimator() {
           <div className="bg-gray-700 rounded-lg p-4">
             <div className="text-sm text-gray-400">ROI (Years)</div>
             <div className="text-xl font-bold text-emerald-400">
-              {totals.roi.toFixed(1)}
+              {totals.currentROI.toFixed(1)}
             </div>
             <div className="text-xs text-gray-400 mt-1">
               Based on avg. monthly revenue of ${(totals.totalMonthlyRevenue / totals.totalCurrentCustomers).toFixed(2)} per customer
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Projected New Customers</div>
+            <div className="text-xl font-bold text-emerald-400">
+              {totals.projectedNewCustomers.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Projected Monthly Revenue</div>
+            <div className="text-xl font-bold text-emerald-400">
+              ${totals.projectedMonthlyRevenue.toLocaleString()}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              Based on {totals.totalProjectedCustomers.toLocaleString()} customers
+            </div>
+          </div>
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Projected ROI (Years)</div>
+            <div className="text-xl font-bold text-emerald-400">
+              {totals.projectedROI.toFixed(1)}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              Based on avg. monthly revenue of ${(totals.projectedMonthlyRevenue / totals.totalProjectedCustomers).toFixed(2)} per customer
             </div>
           </div>
         </div>

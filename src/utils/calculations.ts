@@ -99,8 +99,11 @@ export function calculateROI(
   totalCost: number,
 ): ROICalculation {
   const currentTakeRate = (project.currentCustomers / project.homesPassed) * 100;
-  const remainingHomes = project.homesPassed - project.currentCustomers;
-  const projectedNewCustomers = Math.ceil(remainingHomes * (project.projectedGrowthPercentage / 100));
+  
+  // Calculate projected customers based on growth rate
+  const remainingPotentialCustomers = project.homesPassed - project.currentCustomers;
+  const projectedGrowthDecimal = project.projectedGrowthPercentage / 100;
+  const projectedNewCustomers = Math.ceil(remainingPotentialCustomers * projectedGrowthDecimal);
   const totalProjectedCustomers = project.currentCustomers + projectedNewCustomers;
   const projectedTakeRate = (totalProjectedCustomers / project.homesPassed) * 100;
 

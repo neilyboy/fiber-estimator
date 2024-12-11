@@ -48,6 +48,31 @@ export function ProjectDetails({ initialValues }: ProjectDetailsProps) {
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
         />
       </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Monthly Income per Customer ($)</label>
+        <input
+          type="number"
+          name="monthlyIncomePerCustomer"
+          required
+          min="0"
+          step="0.01"
+          defaultValue={initialValues?.monthlyIncomePerCustomer}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Projected Growth Rate (%)</label>
+        <input
+          type="number"
+          name="projectedGrowthPercentage"
+          required
+          min="0"
+          max="100"
+          step="0.1"
+          defaultValue={initialValues?.projectedGrowthPercentage}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        />
+      </div>
     </div>
   );
 }
