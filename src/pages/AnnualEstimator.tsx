@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Plus, Trash, Calendar } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { calculateProjectCosts } from '../utils/calculations';
-import { calculateROI } from '../utils/calculations';
+import { calculateProjectCosts, calculateSimpleROI } from '../utils/calculations';
 import {
   BarChart,
   Bar,
@@ -119,7 +118,7 @@ function AnnualEstimator() {
       const project = projects.find(p => p.id === projectId);
       if (project) {
         const costs = calculateProjectCosts(project, units, laborRates, mileageRates);
-        const monthlyRevenue = project.currentCustomers * project.monthlyIncomePerCustomer;
+        const monthlyRevenue = project.currentCustomers * (project.monthlyIncomePerCustomer || 0);
         
         totalMaterials += costs.totalUnitsCost;
         totalLabor += costs.totalLaborCost;
@@ -153,7 +152,7 @@ function AnnualEstimator() {
     const totalCost = totalMaterials + totalLabor + totalMileage;
     const averageCostPerHome = totalHomes > 0 ? totalCost / totalHomes : 0;
     const averageTakeRate = totalHomes > 0 ? (totalCurrentCustomers / totalHomes) * 100 : 0;
-    const roi = totalMonthlyRevenue > 0 ? totalCost / (totalMonthlyRevenue * 12) : 0;
+    const roi = calculateSimpleROI(totalCost, totalMonthlyRevenue);
 
     return {
       totalMaterials,
@@ -493,11 +492,17 @@ function AnnualEstimator() {
             <div className="text-xl font-bold text-emerald-400">
               ${totals.totalMonthlyRevenue.toLocaleString()}
             </div>
+            <div className="text-xs text-gray-400 mt-1">
+              Based on {totals.totalCurrentCustomers.toLocaleString()} customers
+            </div>
           </div>
           <div className="bg-gray-700 rounded-lg p-4">
             <div className="text-sm text-gray-400">ROI (Years)</div>
             <div className="text-xl font-bold text-emerald-400">
-              {totals.roi.toFixed(1)} years
+              {totals.roi.toFixed(1)}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              Based on avg. monthly revenue of ${(totals.totalMonthlyRevenue / totals.totalCurrentCustomers).toFixed(2)} per customer
             </div>
           </div>
         </div>

@@ -121,3 +121,9 @@ export function calculateROI(
     fullTakeROI
   };
 }
+
+export function calculateSimpleROI(totalCost: number, monthlyRevenue: number): number {
+  if (monthlyRevenue <= 0) return 0;
+  const annualRevenue = monthlyRevenue * 12;
+  return totalCost / annualRevenue;
+}

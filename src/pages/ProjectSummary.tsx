@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { calculateProjectCosts, calculateROI } from '../utils/calculations';
+import { calculateProjectCosts, calculateSimpleROI } from '../utils/calculations';
 import {
   BarChart,
   Bar,
@@ -48,29 +48,21 @@ function ProjectSummary() {
     totalUnitsCost,
     totalLaborCost,
     totalMileageCost,
-    totalCost,
-    costPerHome
+    totalCost
   } = calculateProjectCosts(project, units, laborRates, mileageRates);
 
-  const {
-    currentTakeRate,
-    projectedNewCustomers,
-    totalProjectedCustomers,
-    projectedTakeRate,
-    currentROI,
-    projectedROI,
-    fullTakeROI
-  } = calculateROI(project, totalCost);
+  const monthlyRevenue = project.currentCustomers * project.monthlyIncomePerCustomer;
+  const roi = calculateSimpleROI(totalCost, monthlyRevenue);
 
   const costBreakdown = [
     { name: 'Materials & Equipment', value: totalUnitsCost },
-    ...(totalLaborCost > 0 ? [{ name: 'Labor', value: totalLaborCost }] : []),
-    ...(totalMileageCost > 0 ? [{ name: 'Mileage', value: totalMileageCost }] : [])
+    { name: 'Labor', value: totalLaborCost },
+    { name: 'Mileage', value: totalMileageCost }
   ];
 
   const takeRateData = [
-    { name: 'Current', customers: project.currentCustomers, takeRate: currentTakeRate },
-    { name: 'Projected', customers: totalProjectedCustomers, takeRate: projectedTakeRate },
+    { name: 'Current', customers: project.currentCustomers, takeRate: ((project.currentCustomers / project.homesPassed) * 100).toFixed(1) },
+    { name: 'Projected', customers: project.currentCustomers, takeRate: ((project.currentCustomers / project.homesPassed) * 100).toFixed(1) },
     { name: 'Full', customers: project.homesPassed, takeRate: 100 }
   ];
 
@@ -114,11 +106,11 @@ function ProjectSummary() {
         </div>
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h3 className="text-sm font-medium text-gray-400">Current Take Rate</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-100">{currentTakeRate.toFixed(1)}%</p>
+          <p className="mt-2 text-3xl font-bold text-gray-100">{((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}%</p>
         </div>
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h3 className="text-sm font-medium text-gray-400">Projected Take Rate</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-100">{projectedTakeRate.toFixed(1)}%</p>
+          <p className="mt-2 text-3xl font-bold text-gray-100">{((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}%</p>
         </div>
       </div>
 
@@ -130,7 +122,7 @@ function ProjectSummary() {
             <div className="text-center p-4 bg-gray-700 rounded-lg">
               <h3 className="font-semibold">100% Take Rate</h3>
               <p className="text-2xl font-bold text-indigo-600">
-                ${costPerHome.toLocaleString()}
+                ${(totalCost / project.homesPassed).toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">
                 Based on {project.homesPassed} homes
@@ -142,16 +134,16 @@ function ProjectSummary() {
                 ${(totalCost / project.currentCustomers).toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">
-                At {currentTakeRate.toFixed(1)}% take rate
+                At {((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}% take rate
               </p>
             </div>
             <div className="text-center p-4 bg-gray-700 rounded-lg">
               <h3 className="font-semibold">Projected Take Rate</h3>
               <p className="text-2xl font-bold text-amber-600">
-                ${(totalCost / totalProjectedCustomers).toLocaleString()}
+                ${(totalCost / project.currentCustomers).toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">
-                At {projectedTakeRate.toFixed(1)}% take rate
+                At {((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}% take rate
               </p>
             </div>
           </div>
@@ -160,29 +152,76 @@ function ProjectSummary() {
         {/* ROI Analysis */}
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-xl font-bold mb-4 text-gray-100">ROI Analysis</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="bg-gray-700/50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-gray-400">Homes Passed</h3>
+                <Users className="w-5 h-5 text-blue-400" />
+              </div>
+              <p className="text-2xl font-bold text-gray-100 mt-2">
+                {project.homesPassed.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="bg-gray-700/50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-gray-400">Current Customers</h3>
+                <Users className="w-5 h-5 text-emerald-400" />
+              </div>
+              <p className="text-2xl font-bold text-gray-100 mt-2">
+                {project.currentCustomers.toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-400 mt-1">
+                ${project.monthlyIncomePerCustomer.toFixed(2)} monthly revenue per customer
+              </p>
+            </div>
+
+            <div className="bg-gray-700/50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-gray-400">Take Rate</h3>
+                <TrendingUp className="w-5 h-5 text-yellow-400" />
+              </div>
+              <p className="text-2xl font-bold text-gray-100 mt-2">
+                {((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}%
+              </p>
+            </div>
+
+            <div className="bg-gray-700/50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-gray-400">ROI (Years)</h3>
+                <TrendingUp className="w-5 h-5 text-purple-400" />
+              </div>
+              <p className="text-2xl font-bold text-gray-100 mt-2">
+                {roi.toFixed(1)}
+              </p>
+              <p className="text-sm text-gray-400 mt-1">
+                Based on ${project.monthlyIncomePerCustomer.toFixed(2)} monthly revenue per customer
+              </p>
+            </div>
+          </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-4 bg-gray-700 rounded-lg">
               <h3 className="font-semibold">Current ROI</h3>
               <p className="text-2xl font-bold text-indigo-600">
-                {currentROI.toFixed(1)} years
+                {roi.toFixed(1)} years
               </p>
               <p className="text-sm text-gray-400">
-                At {currentTakeRate.toFixed(1)}% take rate
+                At {((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}% take rate
               </p>
             </div>
             <div className="text-center p-4 bg-gray-700 rounded-lg">
               <h3 className="font-semibold">Projected ROI</h3>
               <p className="text-2xl font-bold text-green-600">
-                {projectedROI.toFixed(1)} years
+                {roi.toFixed(1)} years
               </p>
               <p className="text-sm text-gray-400">
-                At {projectedTakeRate.toFixed(1)}% take rate
+                At {((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}% take rate
               </p>
             </div>
             <div className="text-center p-4 bg-gray-700 rounded-lg">
               <h3 className="font-semibold">Full Take ROI</h3>
               <p className="text-2xl font-bold text-amber-600">
-                {fullTakeROI.toFixed(1)} years
+                {roi.toFixed(1)} years
               </p>
               <p className="text-sm text-gray-400">
                 At 100% take rate
@@ -211,10 +250,10 @@ function ProjectSummary() {
               <div className="text-center p-4 bg-gray-700 rounded-lg">
                 <h3 className="font-semibold mb-2">Projected Monthly Revenue</h3>
                 <p className="text-2xl font-bold text-amber-600">
-                  ${((project.monthlyIncomePerCustomer || 0) * totalProjectedCustomers).toLocaleString()}
+                  ${((project.monthlyIncomePerCustomer || 0) * project.currentCustomers).toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-400">
-                  {totalProjectedCustomers} customers
+                  {project.currentCustomers} customers
                 </p>
               </div>
             </div>
@@ -241,17 +280,17 @@ function ProjectSummary() {
               </div>
               <div className="text-right">
                 <h3 className="font-semibold">Take Rate</h3>
-                <p className="text-gray-400">{currentTakeRate.toFixed(1)}%</p>
+                <p className="text-gray-400">{((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}%</p>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">Projected Growth</h3>
-                <p className="text-gray-400">+{projectedNewCustomers} homes</p>
+                <p className="text-gray-400">+0 homes</p>
               </div>
               <div className="text-right">
                 <h3 className="font-semibold">New Take Rate</h3>
-                <p className="text-gray-400">{projectedTakeRate.toFixed(1)}%</p>
+                <p className="text-gray-400">{((project.currentCustomers / project.homesPassed) * 100).toFixed(1)}%</p>
               </div>
             </div>
             <div className="h-64">
