@@ -68,7 +68,7 @@ function Home() {
   return (
     <div className="space-y-6 bg-gray-900">
       <div className="text-center space-y-4">
-        <Cable className="w-16 h-16 mx-auto text-indigo-600" />
+        <Cable className="w-16 h-16 mx-auto text-emerald-600" />
         <h1 className="text-4xl font-bold text-gray-100">
           Fiber Project Cost Estimator
         </h1>
@@ -96,7 +96,7 @@ function Home() {
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-800 text-gray-100 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:outline-none"
+            className="w-full pl-10 pr-4 py-2 bg-gray-800 text-gray-100 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:outline-none"
           />
         </div>
       </div>
