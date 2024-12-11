@@ -37,6 +37,11 @@ function ProjectSummary() {
     fetchDepartments();
   }, [fetchDepartments]);
 
+  useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+  }, []);
+
   if (!project) {
     return <div>Project not found</div>;
   }

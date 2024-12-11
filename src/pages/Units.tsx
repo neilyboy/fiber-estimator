@@ -18,6 +18,8 @@ export default function Units() {
   } = useStore();
   const [editingDepartment, setEditingDepartment] = useState<string | null>(null);
   const [editingUnit, setEditingUnit] = useState<string | null>(null);
+  const [deletingDepartment, setDeletingDepartment] = useState<string | null>(null);
+  const [deletingUnit, setDeletingUnit] = useState<string | null>(null);
   const [newDepartment, setNewDepartment] = useState({ name: '', description: '' });
   const [newUnit, setNewUnit] = useState<{ [key: string]: { name: string; type: string; cost: number; description: string } }>({});
   const [expandedDepartments, setExpandedDepartments] = useState<Set<string>>(new Set());
@@ -66,6 +68,16 @@ export default function Units() {
   const handleUpdateUnit = async (unit: Unit) => {
     await updateUnit(unit);
     setEditingUnit(null);
+  };
+
+  const handleDeleteDepartment = async (departmentId: string) => {
+    await deleteDepartment(departmentId);
+    setDeletingDepartment(null);
+  };
+
+  const handleDeleteUnit = async (unitId: string) => {
+    await deleteUnit(unitId);
+    setDeletingUnit(null);
   };
 
   return (
@@ -162,7 +174,7 @@ export default function Units() {
                         <Edit2 size={20} />
                       </button>
                       <button
-                        onClick={() => deleteDepartment(department.id)}
+                        onClick={() => setDeletingDepartment(department.id)}
                         className="p-2 text-red-500 hover:text-red-400"
                       >
                         <Trash2 size={20} />
@@ -302,7 +314,7 @@ export default function Units() {
                                   <Edit2 size={20} />
                                 </button>
                                 <button
-                                  onClick={() => deleteUnit(unit.id)}
+                                  onClick={() => setDeletingUnit(unit.id)}
                                   className="p-2 text-red-500 hover:text-red-400"
                                 >
                                   <Trash2 size={20} />
@@ -319,6 +331,58 @@ export default function Units() {
             );
           })}
       </div>
+
+      {/* Delete Department Confirmation Dialog */}
+      {deletingDepartment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold text-gray-100 mb-4">Delete Department?</h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this department? This will also delete all units in this department. This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setDeletingDepartment(null)}
+                className="px-4 py-2 text-gray-300 bg-gray-700 rounded-lg hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteDepartment(deletingDepartment)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Unit Confirmation Dialog */}
+      {deletingUnit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold text-gray-100 mb-4">Delete Unit?</h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this unit? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setDeletingUnit(null)}
+                className="px-4 py-2 text-gray-300 bg-gray-700 rounded-lg hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteUnit(deletingUnit)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

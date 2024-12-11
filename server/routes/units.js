@@ -40,4 +40,20 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    const units = await readJsonFile('units.json');
+    const index = units.findIndex(u => u.id === req.params.id);
+    if (index === -1) {
+      res.status(404).json({ error: 'Unit not found' });
+      return;
+    }
+    units.splice(index, 1);
+    await writeJsonFile('units.json', units);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete unit' });
+  }
+});
+
 export default router;

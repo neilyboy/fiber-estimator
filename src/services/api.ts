@@ -46,6 +46,20 @@ export async function updateUnit(unit: Unit): Promise<Unit> {
   }
 }
 
+export async function deleteUnit(id: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/units/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete unit');
+    }
+  } catch (error) {
+    console.error('Error deleting unit:', error);
+    throw error;
+  }
+}
+
 export async function fetchLaborRates(): Promise<LaborRate[]> {
   const response = await fetch(`${API_BASE}/labor-rates`);
   if (!response.ok) throw new Error('Failed to fetch labor rates');

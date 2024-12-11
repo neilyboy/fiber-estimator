@@ -378,7 +378,11 @@ function AnnualEstimator() {
                   const costPerHome = costs.totalCost / project.homesPassed;
                   
                   return (
-                    <div key={project.id} className="bg-gray-700 rounded-lg p-4">
+                    <Link
+                      key={project.id}
+                      to={`/summary/${project.id}`}
+                      className="block bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors duration-200"
+                    >
                       <div className="flex justify-between items-center mb-3">
                         <h4 className="text-lg font-medium text-gray-100">{project.name}</h4>
                         <div className="text-emerald-400 font-semibold">
@@ -429,7 +433,7 @@ function AnnualEstimator() {
                           <span className="text-gray-100 ml-2">{roi.toFixed(1)}</span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -499,9 +503,12 @@ function AnnualEstimator() {
         {/* Department Breakdowns */}
         {Object.entries(departmentBreakdowns).map(([department, data]) => (
           <div key={department} className="bg-gray-700 rounded-lg p-4 mt-4">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col mb-4">
               <h4 className="text-md font-medium text-gray-100">{department} Breakdown</h4>
-              <span className="text-emerald-400">Total: ${data.totalCost.toLocaleString()}</span>
+              <span className="text-xs text-gray-400 mt-1">
+                Based on {totals.totalProjectedCustomers.toLocaleString()} projected customers at {totals.projectedTakeRate.toFixed(1)}% take rate
+              </span>
+              <span className="text-emerald-400 mt-2">Total: ${data.totalCost.toLocaleString()}</span>
             </div>
             <div className="w-full overflow-x-auto">
               <table className="w-full text-left">
@@ -533,25 +540,28 @@ function AnnualEstimator() {
           <div className="bg-gray-700 rounded-lg p-4">
             <div className="text-sm text-gray-400">Average Cost per Home</div>
             <div className="text-xl font-bold text-emerald-400">
-              ${totals.averageCostPerHome.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              ${(totals.totalCost / totals.totalProjectedCustomers).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              Based on {totals.totalProjectedCustomers.toLocaleString()} projected customers
             </div>
           </div>
           <div className="bg-gray-700 rounded-lg p-4">
             <div className="text-sm text-gray-400">Monthly Revenue</div>
             <div className="text-xl font-bold text-emerald-400">
-              ${totals.totalMonthlyRevenue.toLocaleString()}
+              ${totals.projectedMonthlyRevenue.toLocaleString()}
             </div>
             <div className="text-xs text-gray-400 mt-1">
-              Based on {totals.totalCurrentCustomers.toLocaleString()} customers
+              Based on {totals.totalProjectedCustomers.toLocaleString()} projected customers at {totals.projectedTakeRate.toFixed(1)}% take rate
             </div>
           </div>
           <div className="bg-gray-700 rounded-lg p-4">
             <div className="text-sm text-gray-400">ROI (Years)</div>
             <div className="text-xl font-bold text-emerald-400">
-              {totals.currentROI.toFixed(1)}
+              {totals.projectedROI.toFixed(1)}
             </div>
             <div className="text-xs text-gray-400 mt-1">
-              Based on avg. monthly revenue of ${(totals.totalMonthlyRevenue / totals.totalCurrentCustomers).toFixed(2)} per customer
+              Based on {totals.totalProjectedCustomers.toLocaleString()} projected customers at ${(totals.projectedMonthlyRevenue / totals.totalProjectedCustomers).toFixed(2)} per customer
             </div>
           </div>
         </div>
