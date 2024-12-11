@@ -555,29 +555,106 @@ function AnnualEstimator() {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+          {/* Full Take Rate (100%) */}
           <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Projected New Customers</div>
-            <div className="text-xl font-bold text-emerald-400">
-              {totals.projectedNewCustomers.toLocaleString()}
+            <h3 className="font-semibold mb-4">100% Take Rate</h3>
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-gray-400">Cost per Home</div>
+                <div className="text-2xl font-bold text-indigo-600">
+                  ${totals.averageCostPerHome.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on {totals.totalHomes.toLocaleString()} homes at 100%
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-400">Monthly Revenue</div>
+                <div className="text-2xl font-bold text-indigo-600">
+                  ${totals.fullTakeMonthlyRevenue.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on {totals.totalHomes.toLocaleString()} homes at 100%
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-400">ROI (Years)</div>
+                <div className="text-2xl font-bold text-indigo-600">
+                  {totals.fullTakeROI.toFixed(1)}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on avg. monthly revenue of ${(totals.fullTakeMonthlyRevenue / totals.totalHomes).toFixed(2)} per customer
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Current Take Rate */}
           <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Projected Monthly Revenue</div>
-            <div className="text-xl font-bold text-emerald-400">
-              ${totals.projectedMonthlyRevenue.toLocaleString()}
-            </div>
-            <div className="text-xs text-gray-400 mt-1">
-              Based on {totals.totalProjectedCustomers.toLocaleString()} customers
+            <h3 className="font-semibold mb-4">Current Take Rate</h3>
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-gray-400">Cost per Home</div>
+                <div className="text-2xl font-bold text-green-600">
+                  ${(totals.totalCost / totals.totalCurrentCustomers).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on {totals.totalCurrentCustomers.toLocaleString()} homes at {totals.currentTakeRate.toFixed(1)}%
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-400">Monthly Revenue</div>
+                <div className="text-2xl font-bold text-green-600">
+                  ${totals.totalMonthlyRevenue.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on {totals.totalCurrentCustomers.toLocaleString()} homes at {totals.currentTakeRate.toFixed(1)}%
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-400">ROI (Years)</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {totals.currentROI.toFixed(1)}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on avg. monthly revenue of ${(totals.totalMonthlyRevenue / totals.totalCurrentCustomers).toFixed(2)} per customer
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Projected Take Rate */}
           <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Projected ROI (Years)</div>
-            <div className="text-xl font-bold text-emerald-400">
-              {totals.projectedROI.toFixed(1)}
-            </div>
-            <div className="text-xs text-gray-400 mt-1">
-              Based on avg. monthly revenue of ${(totals.projectedMonthlyRevenue / totals.totalProjectedCustomers).toFixed(2)} per customer
+            <h3 className="font-semibold mb-4">Projected Take Rate</h3>
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-gray-400">Cost per Home</div>
+                <div className="text-2xl font-bold text-amber-600">
+                  ${(totals.totalCost / totals.totalProjectedCustomers).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on {totals.totalProjectedCustomers.toLocaleString()} homes at {totals.projectedTakeRate.toFixed(1)}%
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-400">Monthly Revenue</div>
+                <div className="text-2xl font-bold text-amber-600">
+                  ${totals.projectedMonthlyRevenue.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on {totals.totalProjectedCustomers.toLocaleString()} homes at {totals.projectedTakeRate.toFixed(1)}%
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-400">ROI (Years)</div>
+                <div className="text-2xl font-bold text-amber-600">
+                  {totals.projectedROI.toFixed(1)}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Based on avg. monthly revenue of ${(totals.projectedMonthlyRevenue / totals.totalProjectedCustomers).toFixed(2)} per customer
+                </div>
+              </div>
             </div>
           </div>
         </div>
