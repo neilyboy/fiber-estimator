@@ -8,6 +8,7 @@ import mileageRatesRouter from './routes/mileage-rates.js';
 import projectsRouter from './routes/projects.js';
 import settingsRouter from './routes/settings.js';
 import departmentsRouter from './routes/departments.js';
+import annualProjectsRouter from './routes/annual-projects.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -27,6 +28,7 @@ app.use('/api/mileage-rates', mileageRatesRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/departments', departmentsRouter);
+app.use('/api/annual-projects', annualProjectsRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
