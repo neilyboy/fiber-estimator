@@ -71,14 +71,15 @@ function AnnualEstimator() {
           notes: formData.notes,
           projectIds: formData.projectIds
         });
+        // Don't navigate away when updating
       } else {
         await saveAnnualProject({
           name: formData.name,
           notes: formData.notes,
           projectIds: formData.projectIds
         });
+        navigate('/');
       }
-      navigate('/');
     } catch (error) {
       console.error('Failed to save annual project:', error);
     }
