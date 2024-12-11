@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { Cable, Calculator, Home, List, Clock, TrendingUp } from 'lucide-react';
+import { Cable, Calculator, Home, List, Clock, TrendingUp, Calendar } from 'lucide-react';
 
 function Layout() {
   return (
@@ -64,6 +64,19 @@ function Layout() {
               >
                 <Calculator className="w-4 h-4" />
                 <span>Estimator</span>
+              </NavLink>
+              <NavLink
+                to="/annual-estimator"
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive
+                      ? 'bg-gray-700 text-emerald-400'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-emerald-300'
+                  }`
+                }
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Annual Estimator</span>
               </NavLink>
             </div>
           </div>
