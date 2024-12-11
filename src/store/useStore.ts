@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Unit, ProjectArea, LaborRate, MileageRate, Department } from '../types';
+import { Unit, ProjectArea, LaborRate, MileageRate, Department, AnnualProject } from '../types';
 import * as api from '../services/api';
 
 interface Store {
@@ -8,6 +8,7 @@ interface Store {
   laborRates: LaborRate[];
   mileageRates: MileageRate[];
   projects: ProjectArea[];
+  annualProjects: AnnualProject[];
   selectedProject: ProjectArea | null;
   fetchUnits: () => Promise<void>;
   fetchDepartments: () => Promise<void>;
@@ -24,6 +25,10 @@ interface Store {
   updateProject: (project: ProjectArea) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   setSelectedProject: (project: ProjectArea | null) => void;
+  fetchAnnualProjects: () => Promise<void>;
+  saveAnnualProject: (project: Omit<AnnualProject, 'id' | 'createdAt' | 'updatedAt'>) => Promise<AnnualProject>;
+  updateAnnualProject: (project: Omit<AnnualProject, 'createdAt' | 'updatedAt'>) => Promise<AnnualProject>;
+  deleteAnnualProject: (id: string) => Promise<void>;
 }
 
 export const useStore = create<Store>((set, get) => ({
@@ -32,6 +37,7 @@ export const useStore = create<Store>((set, get) => ({
   laborRates: [],
   mileageRates: [],
   projects: [],
+  annualProjects: [],
   selectedProject: null,
 
   fetchUnits: async () => {
@@ -254,5 +260,54 @@ export const useStore = create<Store>((set, get) => ({
 
   setSelectedProject: (project) => {
     set({ selectedProject: project });
+  },
+
+  fetchAnnualProjects: async () => {
+    try {
+      const annualProjects = await api.fetchAnnualProjects();
+      set({ annualProjects });
+    } catch (error) {
+      console.error('Error fetching annual projects:', error);
+    }
+  },
+
+  saveAnnualProject: async (project) => {
+    try {
+      const newProject = await api.saveAnnualProject(project);
+      set(state => ({
+        annualProjects: [...state.annualProjects, newProject]
+      }));
+      return newProject;
+    } catch (error) {
+      console.error('Error saving annual project:', error);
+      throw error;
+    }
+  },
+
+  updateAnnualProject: async (project) => {
+    try {
+      const updatedProject = await api.updateAnnualProject(project);
+      set(state => ({
+        annualProjects: state.annualProjects.map(p =>
+          p.id === project.id ? updatedProject : p
+        )
+      }));
+      return updatedProject;
+    } catch (error) {
+      console.error('Error updating annual project:', error);
+      throw error;
+    }
+  },
+
+  deleteAnnualProject: async (id) => {
+    try {
+      await api.deleteAnnualProject(id);
+      set(state => ({
+        annualProjects: state.annualProjects.filter(p => p.id !== id)
+      }));
+    } catch (error) {
+      console.error('Error deleting annual project:', error);
+      throw error;
+    }
   },
 }));

@@ -64,3 +64,12 @@ export interface Settings {
   monthlyIncomePerCustomer: number;
   projectedGrowthPercentage: number;
 }
+
+export interface AnnualProject {
+  id: string;
+  name: string;
+  notes?: string;
+  projectIds: string[];  // Array of regular project IDs included in this annual project
+  createdAt: string;
+  updatedAt: string;
+}
